@@ -2,7 +2,12 @@
 
 package com.example.rmarkov.mapapp.utils
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Location
+import android.support.v4.content.ContextCompat
+import com.example.rmarkov.mapapp.MapApplication
+import com.example.rmarkov.mapapp.dagger.components.ApplicationComponent
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.model.LatLng
 
@@ -32,4 +37,15 @@ fun Location.distanceTo(latlng: LatLng?): Float {
     locationB.latitude = latlng.latitude
     locationB.longitude = latlng.longitude
     return distanceTo(locationB)
+}
+
+fun Context.getAppComponent(): ApplicationComponent {
+    return (applicationContext as MapApplication).component
+}
+
+fun Context.checkLocationPermission(): Boolean {
+    return ContextCompat.checkSelfPermission(
+            this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            && ContextCompat.checkSelfPermission(
+            this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
 }

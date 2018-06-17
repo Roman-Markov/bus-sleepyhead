@@ -10,3 +10,4 @@
 .externalNativeBuild
 app/src/main/res/values/some_resources.xml
 /.idea/caches/build_file_checksums.ser
+app/src/main/res/values/hiden_values.xml

@@ -1,14 +1,19 @@
 package com.example.rmarkov.mapapp.dagger
 
+import io.reactivex.disposables.CompositeDisposable
+
 abstract class BasePresenter<V> {
 
     protected var view: V? = null
 
-    protected open fun attachView(view: V) {
+    protected var compositeDisposable = CompositeDisposable()
+
+    public open fun attachView(view: V) {
         this.view = view
     }
 
-    protected open fun detachView() {
+    public open fun detachView() {
+        compositeDisposable.clear()
         view = null
     }
 }

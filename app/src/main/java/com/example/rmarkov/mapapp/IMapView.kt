@@ -1,5 +1,7 @@
 package com.example.rmarkov.mapapp
 
+import android.support.annotation.IdRes
+import android.support.annotation.IntegerRes
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.model.*
 
@@ -27,4 +29,8 @@ public interface IMapView {
     fun addCircle(circleOptions: CircleOptions): Circle
 
     fun startAlert()
+
+    fun startLocationService()
+
+    fun showMessage(stringIdRes: Int)
 }

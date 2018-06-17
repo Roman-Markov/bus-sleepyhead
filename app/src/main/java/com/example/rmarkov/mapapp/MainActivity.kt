@@ -11,6 +11,8 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Vibrator
+import android.support.annotation.IdRes
+import android.support.annotation.IntegerRes
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.widget.Toast
@@ -25,6 +27,10 @@ import javax.inject.Inject
 
 
 class MainActivity : Activity(), IMapView, OnMapReadyCallback {
+    override fun showMessage(stringIdRes: Int) {
+        Toast.makeText(this, stringIdRes, Toast.LENGTH_SHORT).show()
+    }
+
 
     companion object {
         val TAG = "MainActivity"
@@ -65,18 +71,6 @@ class MainActivity : Activity(), IMapView, OnMapReadyCallback {
         }
     }
 
-
-
-    override fun onResume() {
-//        startLocationUpdate()
-        super.onResume()
-    }
-
-    override fun onPause() {
-        presenter.onPause()
-        super.onPause()
-    }
-
     @SuppressLint("MissingPermission")
     override fun updateLocationUi() {
         if (isPermissionGranted) {
@@ -85,13 +79,6 @@ class MainActivity : Activity(), IMapView, OnMapReadyCallback {
             disableLocationUi()
             getLocationPermission()
         }
-
-        val circleOptions = CircleOptions()
-                .center(LatLng(0.0, 0.0))
-                .radius(500.0)
-                .strokeColor(Color.BLUE)
-                .fillColor(this.resources.getColor(R.color.circle))
-                .strokeWidth(1f)
     }
 
 
@@ -176,5 +163,9 @@ class MainActivity : Activity(), IMapView, OnMapReadyCallback {
         val am = getSystemService(Activity.ALARM_SERVICE) as AlarmManager
         am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
                 pendingIntent)
+    }
+
+    override fun startLocationService() {
+        startService(Intent(this, LocationService::class.java))
     }
 }
