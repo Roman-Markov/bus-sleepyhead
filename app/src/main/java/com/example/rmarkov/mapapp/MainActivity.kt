@@ -152,20 +152,14 @@ class MainActivity : Activity(), IMapView, OnMapReadyCallback {
         return googleMap.addCircle(circleOptions)
     }
 
-    override fun startAlert() {
-        val cal = Calendar.getInstance()
-        cal.add(Calendar.SECOND, 1)
-
-        //Create a new PendingIntent and add it to the AlarmManager
-        val intent = Intent(this, AlarmReceiverActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this,
-                12345, intent, PendingIntent.FLAG_CANCEL_CURRENT)
-        val am = getSystemService(Activity.ALARM_SERVICE) as AlarmManager
-        am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),
-                pendingIntent)
-    }
-
-    override fun startLocationService() {
-        startService(Intent(this, LocationService::class.java))
+    override fun startLocationService(latlng: LatLng?) {
+        if (latlng == null) {
+            startService(Intent(this, LocationService::class.java))
+        } else {
+            val intent = LocationService
+                    .createIntent(this)
+                    .putExtra(this.getString(R.string.key_for_last_destination), arrayListOf(latlng))
+            startService(intent);
+        }
     }
 }

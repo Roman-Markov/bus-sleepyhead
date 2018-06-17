@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">MapApp</string>
     <string name="destination_is_too_close">Destination is too close. Pick another place or reduce the radius.</string>
+    <string name="key_for_last_destination">key_for_last_destination</string>
 </resources>

@@ -24,7 +24,7 @@ class MapViewPresenter
 
     var circle: Circle? = null
 
-    var radius = 1000.0
+    var radius = 100.0
 
     public override fun attachView(view: IMapView) {
         val deviceDistanceDisposable = locationStatusHolder
@@ -39,7 +39,6 @@ class MapViewPresenter
     }
 
     fun onMapReady() {
-        view?.startLocationService()
         view?.updateLocationUi()
         startLocationUpdate()
     }
@@ -49,7 +48,7 @@ class MapViewPresenter
         val v = view
         v?: return
         if (v.isLocationPermissionGranted()) {
-            v.startLocationService()
+            v.startLocationService(null)
         } else {
             v.getLocationPermission();
         }
@@ -85,9 +84,11 @@ class MapViewPresenter
     }
 
     private fun createNewDestination(latlng: LatLng) {
+        locationStatusHolder.onDestinationPositionChanged(latlng)
         val map = view?: return
         marker = map.createMarker(createUsualMarkerOptions(latlng))
         circle = map.addCircle(createUsualCircleOptions(latlng))
+        map.startLocationService(latlng)
     }
 
     private fun createUsualMarkerOptions(latlng: LatLng): MarkerOptions {
@@ -135,8 +136,6 @@ class MapViewPresenter
     private fun handleNewDistance(distance: Float) {
         if (distance > radius) {
             view?.showDistance(distance)
-        } else {
-            view?.startAlert()
         }
     }
 

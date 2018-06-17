@@ -28,9 +28,7 @@ public interface IMapView {
 
     fun addCircle(circleOptions: CircleOptions): Circle
 
-    fun startAlert()
-
-    fun startLocationService()
+    fun startLocationService(latlng: LatLng?)
 
     fun showMessage(stringIdRes: Int)
 }

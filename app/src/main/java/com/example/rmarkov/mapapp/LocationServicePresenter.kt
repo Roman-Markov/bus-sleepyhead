@@ -2,16 +2,19 @@ package com.example.rmarkov.mapapp
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.location.Location
+import android.preference.PreferenceManager
 import android.util.Log
-import android.widget.Toast
 import com.example.rmarkov.mapapp.dagger.BasePresenter
 import com.example.rmarkov.mapapp.utils.checkLocationPermission
+import com.example.rmarkov.mapapp.utils.distanceTo
 import com.example.rmarkov.mapapp.utils.toLatLng
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import javax.inject.Inject
@@ -21,9 +24,13 @@ class LocationServicePresenter
                     private val fusedLocationProviderClient: FusedLocationProviderClient,
                     private val locationHolder: LocationStatusHolder): BasePresenter<ILocationService>(){
 
+    val TAG = "LocationServPresenter"
+
     lateinit var lastKnownLocation: Location
 
     private var locationRequest: LocationRequest? = null
+
+    private var radius = 100.0
 
     var locationCallback: LocationCallback = object: LocationCallback() {
         override fun onLocationResult(locactioResult: LocationResult?) {
@@ -31,19 +38,26 @@ class LocationServicePresenter
             lastKnownLocation = locactioResult.lastLocation
             // TODO think about delegate
             locationHolder.onDevicePositionChanged(lastKnownLocation.toLatLng())
+            handleDeviceLocation(lastKnownLocation.toLatLng())
         }
     }
 
     @SuppressLint("MissingPermission")
-    fun onServiceStarted() {
+    fun onServiceStarted(isServiceRestarted: Boolean) {
+
+        if(isServiceRestarted) {
+            val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+        }
+
         if (context.checkLocationPermission()) {
+            Log.d(TAG,"permissions exists, starting work...")
             // first retrieving location here to faster pass to MapView, since LocationCallback may
             // be called too late
             getDeviceLocation()
             populateLocationRequest()
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null)
         } else {
-            Toast.makeText(context, "Location permission is needed", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Location permission is needed")
         }
     }
 
@@ -53,23 +67,24 @@ class LocationServicePresenter
     }
 
     private fun getDeviceLocation() {
+        Log.d(TAG, "retrieving current location...")
         try {
             if (context.checkLocationPermission()) {
                 val locationResult = fusedLocationProviderClient.lastLocation
                 locationResult.addOnCompleteListener(object: OnCompleteListener<Location> {
                     override fun onComplete(task: Task<Location>) {
                         if (task.isSuccessful) {
+                            Log.d(TAG, "retrieving current location is success: ${task.result}")
                             lastKnownLocation = task.result
                             locationHolder.onDevicePositionChanged(lastKnownLocation.toLatLng())
                         } else {
-                            Log.e(MainActivity.TAG, "Current location is null")
+                            Log.e(TAG, "Current location is null, exception: ", task.exception)
                         }
                     }
-
                 })
             }
         } catch (e: SecurityException) {
-            Log.e(MainActivity.TAG, "Exception: ${e.localizedMessage}")
+            Log.e(TAG, "Exception: $e")
         }
     }
 
@@ -78,5 +93,19 @@ class LocationServicePresenter
         locationRequest!!.interval = 5000
         locationRequest!!.fastestInterval = 5000
         locationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+    }
+
+    private fun handleDeviceLocation(latlng: LatLng) {
+        Log.d(TAG, "location: $latlng")
+        if (locationHolder.destinationLocation != null) {
+            handleNewDistance(latlng.distanceTo(locationHolder.destinationLocation))
+        }
+    }
+
+    private fun handleNewDistance(distance: Float) {
+        Log.d(TAG, "distance: $distance")
+        if (distance < radius) {
+            view?.startAlert()
+        }
     }
 }

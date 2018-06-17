@@ -5,6 +5,7 @@ import android.content.Context
 import android.media.RingtoneManager
 import android.media.AudioManager
 import android.content.Context.AUDIO_SERVICE
+import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import android.view.MotionEvent
@@ -32,6 +33,7 @@ class AlarmReceiverActivity: Activity() {
         stopAlarm.setOnClickListener(object : View.OnClickListener {
             override  fun onClick(arg0: View) {
                 mMediaPlayer!!.stop()
+                stopService(LocationService.createIntent(this@AlarmReceiverActivity))
                 finish()
             }
         })
@@ -72,4 +74,9 @@ class AlarmReceiverActivity: Activity() {
         return alert
     }
 
+    override fun onStop() {
+        super.onStop()
+        stopService(LocationService.createIntent(this@AlarmReceiverActivity))
+        mMediaPlayer!!.stop()
+    }
 }
