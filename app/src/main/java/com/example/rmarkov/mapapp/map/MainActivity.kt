@@ -1,45 +1,44 @@
-package com.example.rmarkov.mapapp
+package com.example.rmarkov.mapapp.map
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Bundle
-import android.os.Vibrator
-import android.support.annotation.IdRes
-import android.support.annotation.IntegerRes
+import android.os.PersistableBundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AppCompatActivity
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
+import com.example.rmarkov.mapapp.MapApplication
+import com.example.rmarkov.mapapp.R
+import com.example.rmarkov.mapapp.SettingsActivity
+import com.example.rmarkov.mapapp.location.LocationService
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapFragment
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
 import javax.inject.Inject
 
 
-class MainActivity : Activity(), IMapView, OnMapReadyCallback {
+class MainActivity : AppCompatActivity(), IMapView, OnMapReadyCallback {
 
     companion object {
         val TAG = "MainActivity"
         val REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 1421
     }
 
-    lateinit var googleMap: GoogleMap;
+    private lateinit var googleMap: GoogleMap;
     @Inject
     lateinit var presenter: MapViewPresenter
 
-    lateinit var marker: Marker
+    private var isPermissionGranted = false;
 
-    var isPermissionGranted = false;
+    private lateinit var settingsItem: MenuItem
 
     override fun onStart() {
         presenter.attachView(this)
@@ -51,10 +50,23 @@ class MainActivity : Activity(), IMapView, OnMapReadyCallback {
         super.onStop()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.map_menu, menu)
+        menu?.let{ settingsItem = menu.findItem(R.id.settings)}
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item?.itemId == settingsItem.itemId) {
+            startActivity(SettingsActivity.createIntent(this))
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        (fragmentManager.findFragmentById(R.id.mapView) as MapFragment).getMapAsync(this)
+        (supportFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment).getMapAsync(this)
         (applicationContext as MapApplication).component.inject(this)
     }
 
@@ -77,7 +89,9 @@ class MainActivity : Activity(), IMapView, OnMapReadyCallback {
         }
     }
 
-
+    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
+        super.onCreate(savedInstanceState, persistentState)
+    }
 
     override fun showLocationInfo(latLng: LatLng) {
         //locationTv.text = latLng.toString()
@@ -104,11 +118,10 @@ class MainActivity : Activity(), IMapView, OnMapReadyCallback {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         isPermissionGranted = false
         when (requestCode) {
-            REQUEST_CODE_FOR_LOCATION_PERMISSIONS -> if (grantResults != null
-                    && grantResults.isNotEmpty()
+            REQUEST_CODE_FOR_LOCATION_PERMISSIONS -> if (grantResults.isNotEmpty()
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 isPermissionGranted = true
             }
@@ -140,19 +153,21 @@ class MainActivity : Activity(), IMapView, OnMapReadyCallback {
     }
 
     override fun createMarker(markerOptions: MarkerOptions): Marker {
+        Log.d(TAG, "createMarker at position ${markerOptions.position}")
         return googleMap.addMarker(markerOptions)
     }
 
     override fun addCircle(circleOptions: CircleOptions): Circle {
+        Log.d(TAG, "addCircle at position ${circleOptions.center}")
         return googleMap.addCircle(circleOptions)
     }
 
     override fun startLocationService(latlng: LatLng?) {
+        Log.d(TAG, "startLocationService for tracking destination $latlng")
         if (latlng == null) {
             startService(Intent(this, LocationService::class.java))
         } else {
-            val intent = LocationService
-                    .createIntent(this)
+            val intent = LocationService.createIntent(this)
                     .putExtra(this.getString(R.string.key_for_last_destination), arrayListOf(latlng))
             startService(intent);
         }

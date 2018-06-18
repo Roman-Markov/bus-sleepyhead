@@ -1,4 +1,4 @@
-package com.example.rmarkov.mapapp.dagger
+package com.example.rmarkov.mapapp
 
 import io.reactivex.disposables.CompositeDisposable
 

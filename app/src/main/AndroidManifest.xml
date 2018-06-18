@@ -18,8 +18,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.NoTitleBar">
-        <activity android:name=".MainActivity"
-            android:screenOrientation="nosensor">
+        <activity android:name=".map.MainActivity"
+            android:screenOrientation="nosensor"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,16 +29,18 @@
         </activity>
         <activity android:name=".AlarmReceiverActivity"
             android:screenOrientation="nosensor"/>
+        <activity android:name=".SettingsActivity"
+            android:theme="@style/AppPreferenceTheme"
+            android:parentActivityName=".map.MainActivity"/>
 
         <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
+            android:name="com.google.android.gms.version"/>
 
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/key"/>
 
-        <service android:name=".LocationService" />
+        <service android:name=".location.LocationService" />
     </application>
 
 </manifest>

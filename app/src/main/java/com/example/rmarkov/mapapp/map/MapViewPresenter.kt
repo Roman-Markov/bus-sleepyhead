@@ -1,9 +1,11 @@
-package com.example.rmarkov.mapapp
+package com.example.rmarkov.mapapp.map
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
-import com.example.rmarkov.mapapp.dagger.BasePresenter
+import com.example.rmarkov.mapapp.location.LocationStatusHolder
+import com.example.rmarkov.mapapp.R
+import com.example.rmarkov.mapapp.BasePresenter
 import com.example.rmarkov.mapapp.utils.distanceTo
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap

@@ -8,4 +8,9 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AppPreferenceTheme" parent="@style/PreferenceFixTheme.Light.DarkActionBar">
+        <!-- Theme for the Preferences -->
+    </style>
+
+
 </resources>

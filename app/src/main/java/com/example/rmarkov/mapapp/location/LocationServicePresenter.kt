@@ -1,12 +1,10 @@
-package com.example.rmarkov.mapapp
+package com.example.rmarkov.mapapp.location
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.location.Location
-import android.preference.PreferenceManager
 import android.util.Log
-import com.example.rmarkov.mapapp.dagger.BasePresenter
+import com.example.rmarkov.mapapp.BasePresenter
 import com.example.rmarkov.mapapp.utils.checkLocationPermission
 import com.example.rmarkov.mapapp.utils.distanceTo
 import com.example.rmarkov.mapapp.utils.toLatLng
@@ -48,7 +46,7 @@ class LocationServicePresenter
 
     @SuppressLint("MissingPermission")
     fun onServiceStarted(lastDestination: LatLng?) {
-
+        lastKnownDestination = lastDestination?: lastKnownDestination
         if (!isLocationUpdatesRequested) {
             if (context.checkLocationPermission()) {
                 Log.d(TAG, "permissions exists, starting work...")
@@ -62,14 +60,16 @@ class LocationServicePresenter
                 Log.d(TAG, "Location permission is needed")
             }
         }
-        lastKnownDestination = lastDestination?: lastKnownDestination
-
     }
 
     override fun detachView() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         isLocationUpdatesRequested = false
         super.detachView()
+        if (lastKnownDestination == null) {
+            // it is no need to keep service in background when destination is unknown
+            view?.stop()
+        }
     }
 
     private fun getDeviceLocation() {

@@ -1,4 +1,4 @@
-package com.example.rmarkov.mapapp
+package com.example.rmarkov.mapapp.location
 
 import android.app.Activity
 import android.app.AlarmManager
@@ -7,13 +7,20 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import com.example.rmarkov.mapapp.AlarmReceiverActivity
+import com.example.rmarkov.mapapp.R
 import com.example.rmarkov.mapapp.utils.getAppComponent
 import com.google.android.gms.maps.model.LatLng
-import org.jetbrains.annotations.Nullable
 import java.util.*
 import javax.inject.Inject
 
 class LocationService: Service(), ILocationService {
+
+    companion object {
+        fun createIntent(context: Context): Intent {
+            return Intent(context, LocationService::class.java)
+        }
+    }
 
     @Inject
     lateinit var presenter: LocationServicePresenter
@@ -23,12 +30,6 @@ class LocationService: Service(), ILocationService {
         presenter.attachView(this);
         super.onCreate()
     }
-    companion object {
-        fun createIntent(context: Context): Intent {
-            return Intent(context, LocationService::class.java)
-        }
-    }
-
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -59,5 +60,9 @@ class LocationService: Service(), ILocationService {
     override fun onDestroy() {
         presenter.detachView()
         super.onDestroy()
+    }
+
+    override fun stop() {
+        stopSelf()
     }
 }

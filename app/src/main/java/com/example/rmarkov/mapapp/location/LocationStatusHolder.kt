@@ -1,4 +1,4 @@
-package com.example.rmarkov.mapapp
+package com.example.rmarkov.mapapp.location
 
 import com.google.android.gms.maps.model.LatLng
 import io.reactivex.Observable

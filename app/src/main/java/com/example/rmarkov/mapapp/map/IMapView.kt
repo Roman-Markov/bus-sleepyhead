@@ -1,4 +1,4 @@
-package com.example.rmarkov.mapapp
+package com.example.rmarkov.mapapp.map
 
 import android.support.annotation.IdRes
 import android.support.annotation.IntegerRes

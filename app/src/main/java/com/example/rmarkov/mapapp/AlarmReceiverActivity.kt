@@ -4,18 +4,14 @@ import android.app.Activity
 import android.content.Context
 import android.media.RingtoneManager
 import android.media.AudioManager
-import android.content.Context.AUDIO_SERVICE
-import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
-import android.view.MotionEvent
-import android.view.View.OnTouchListener
 import android.view.WindowManager
-import android.view.Window.FEATURE_NO_TITLE
 import android.os.Bundle
 import android.view.View
 import android.view.Window
 import android.widget.Button
+import com.example.rmarkov.mapapp.location.LocationService
 import java.io.IOException
 
 

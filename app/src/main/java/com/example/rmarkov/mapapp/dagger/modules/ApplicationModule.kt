@@ -1,7 +1,7 @@
 package com.example.rmarkov.mapapp.dagger.modules
 
 import android.content.Context
-import com.example.rmarkov.mapapp.LocationStatusHolder
+import com.example.rmarkov.mapapp.location.LocationStatusHolder
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.Module

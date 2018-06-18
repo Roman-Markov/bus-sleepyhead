@@ -29,10 +29,19 @@ android {
 }
 
 dependencies {
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.android.support:appcompat-v7:27.1.1'
+
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+
+    def androidSupportLibs = '27.1.1'
+    implementation 'com.android.support:appcompat-v7:${androidSupportLibs}'
+    implementation "com.android.support:preference-v7:${androidSupportLibs}"
+    implementation "com.android.support:preference-v14:${androidSupportLibs}"
+
+    // contains fix fot PreferenceTheme v7 https://github.com/Gericop/Android-Support-Preference-V7-Fix
+    implementation 'com.takisoft.fix:preference-v7:27.1.1.1'
 
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
     implementation 'com.google.android.gms:play-services-location:15.0.1'
