@@ -24,9 +24,9 @@ class MapViewPresenter
 
     var circle: Circle? = null
 
-    var radius = 100.0
+    var radius = 10.0
 
-    public override fun attachView(view: IMapView) {
+    override fun attachView(view: IMapView) {
         val deviceDistanceDisposable = locationStatusHolder
                 .deviceLocationObservable
                 .subscribe(this::handleDeviceLocation)
@@ -86,9 +86,9 @@ class MapViewPresenter
     private fun createNewDestination(latlng: LatLng) {
         locationStatusHolder.onDestinationPositionChanged(latlng)
         val map = view?: return
+        map.startLocationService(latlng)
         marker = map.createMarker(createUsualMarkerOptions(latlng))
         circle = map.addCircle(createUsualCircleOptions(latlng))
-        map.startLocationService(latlng)
     }
 
     private fun createUsualMarkerOptions(latlng: LatLng): MarkerOptions {
@@ -109,17 +109,18 @@ class MapViewPresenter
 
     // previous position of marker that was dragged is correct
     private fun handleNewDraggableMarker(m: Marker) {
-        val v = view?: return
+        val map = view?: return
         val distance = locationStatusHolder.deviceLocation.distanceTo(m.position)
         if (distance > radius) {
             locationStatusHolder.onDestinationPositionChanged(m.position)
             circle?.remove()
-            circle = v.addCircle(createUsualCircleOptions(m.position))
+            circle = map.addCircle(createUsualCircleOptions(m.position))
+            map.startLocationService(m.position)
         } else {
             // return to previous marker
             m.remove()
-            marker = v.createMarker(createUsualMarkerOptions(circle!!.center))
-            v.showMessage(R.string.destination_is_too_close)
+            marker = map.createMarker(createUsualMarkerOptions(circle!!.center))
+            map.showMessage(R.string.destination_is_too_close)
         }
     }
 
@@ -134,9 +135,7 @@ class MapViewPresenter
     }
 
     private fun handleNewDistance(distance: Float) {
-        if (distance > radius) {
             view?.showDistance(distance)
-        }
     }
 
 }

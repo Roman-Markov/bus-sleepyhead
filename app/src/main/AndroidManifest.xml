@@ -26,7 +26,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AlarmReceiverActivity" />
+        <activity android:name=".AlarmReceiverActivity"
+            android:screenOrientation="nosensor"/>
 
         <meta-data
             android:name="com.google.android.gms.version"

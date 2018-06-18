@@ -24,13 +24,17 @@ class LocationServicePresenter
                     private val fusedLocationProviderClient: FusedLocationProviderClient,
                     private val locationHolder: LocationStatusHolder): BasePresenter<ILocationService>(){
 
-    val TAG = "LocationServPresenter"
+    private val TAG = "LocationServPresenter"
 
-    lateinit var lastKnownLocation: Location
+    private lateinit var lastKnownLocation: Location
+
+    private var lastKnownDestination: LatLng? = null
 
     private var locationRequest: LocationRequest? = null
 
-    private var radius = 100.0
+    private var radius = 10.0
+
+    private var isLocationUpdatesRequested = false
 
     var locationCallback: LocationCallback = object: LocationCallback() {
         override fun onLocationResult(locactioResult: LocationResult?) {
@@ -43,26 +47,28 @@ class LocationServicePresenter
     }
 
     @SuppressLint("MissingPermission")
-    fun onServiceStarted(isServiceRestarted: Boolean) {
+    fun onServiceStarted(lastDestination: LatLng?) {
 
-        if(isServiceRestarted) {
-            val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+        if (!isLocationUpdatesRequested) {
+            if (context.checkLocationPermission()) {
+                Log.d(TAG, "permissions exists, starting work...")
+                // first retrieving location here to faster pass to MapView, since LocationCallback may
+                // be called too late
+                getDeviceLocation()
+                populateLocationRequest()
+                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null)
+                isLocationUpdatesRequested = true
+            } else {
+                Log.d(TAG, "Location permission is needed")
+            }
         }
+        lastKnownDestination = lastDestination?: lastKnownDestination
 
-        if (context.checkLocationPermission()) {
-            Log.d(TAG,"permissions exists, starting work...")
-            // first retrieving location here to faster pass to MapView, since LocationCallback may
-            // be called too late
-            getDeviceLocation()
-            populateLocationRequest()
-            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null)
-        } else {
-            Log.d(TAG, "Location permission is needed")
-        }
     }
 
     override fun detachView() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+        isLocationUpdatesRequested = false
         super.detachView()
     }
 
@@ -97,14 +103,15 @@ class LocationServicePresenter
 
     private fun handleDeviceLocation(latlng: LatLng) {
         Log.d(TAG, "location: $latlng")
-        if (locationHolder.destinationLocation != null) {
-            handleNewDistance(latlng.distanceTo(locationHolder.destinationLocation))
+        if (lastKnownDestination != null) {
+            handleNewDistance(latlng.distanceTo(lastKnownDestination))
         }
     }
 
     private fun handleNewDistance(distance: Float) {
         Log.d(TAG, "distance: $distance")
         if (distance < radius) {
+            Log.d(TAG, "Start alert - distance: $distance, radius: $radius")
             view?.startAlert()
         }
     }

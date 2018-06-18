@@ -27,10 +27,6 @@ import javax.inject.Inject
 
 
 class MainActivity : Activity(), IMapView, OnMapReadyCallback {
-    override fun showMessage(stringIdRes: Int) {
-        Toast.makeText(this, stringIdRes, Toast.LENGTH_SHORT).show()
-    }
-
 
     companion object {
         val TAG = "MainActivity"
@@ -84,12 +80,11 @@ class MainActivity : Activity(), IMapView, OnMapReadyCallback {
 
 
     override fun showLocationInfo(latLng: LatLng) {
-        locationTv.text = latLng.toString()
+        //locationTv.text = latLng.toString()
     }
 
     override fun showDistance(distance: Float) {
-        var previous = locationTv.text.toString()
-        locationTv.text = String.format("%s|| %.1f", previous, distance)
+        locationTv.text = String.format("Distance: %.1f", distance)
     }
 
     override fun isLocationPermissionGranted(): Boolean = isPermissionGranted
@@ -161,5 +156,9 @@ class MainActivity : Activity(), IMapView, OnMapReadyCallback {
                     .putExtra(this.getString(R.string.key_for_last_destination), arrayListOf(latlng))
             startService(intent);
         }
+    }
+
+    override fun showMessage(stringIdRes: Int) {
+        Toast.makeText(this, stringIdRes, Toast.LENGTH_SHORT).show()
     }
 }

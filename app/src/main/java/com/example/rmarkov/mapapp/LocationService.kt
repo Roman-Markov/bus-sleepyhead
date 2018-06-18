@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import com.example.rmarkov.mapapp.utils.getAppComponent
+import com.google.android.gms.maps.model.LatLng
 import org.jetbrains.annotations.Nullable
 import java.util.*
 import javax.inject.Inject
@@ -23,8 +24,8 @@ class LocationService: Service(), ILocationService {
         super.onCreate()
     }
     companion object {
-        public fun createIntent(context: Context): Intent {
-            return Intent(context, this::class.java)
+        fun createIntent(context: Context): Intent {
+            return Intent(context, LocationService::class.java)
         }
     }
 
@@ -34,7 +35,11 @@ class LocationService: Service(), ILocationService {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        presenter.onServiceStarted(intent != null)
+        var lastDestination = intent?.getParcelableArrayListExtra<LatLng>(
+                this.getString(R.string.key_for_last_destination))?.first()
+        presenter.onServiceStarted(
+                if (lastDestination == null) null
+                else lastDestination as LatLng)
         return START_REDELIVER_INTENT
     }
 

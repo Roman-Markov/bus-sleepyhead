@@ -33,12 +33,17 @@ class AlarmReceiverActivity: Activity() {
         stopAlarm.setOnClickListener(object : View.OnClickListener {
             override  fun onClick(arg0: View) {
                 mMediaPlayer!!.stop()
-                stopService(LocationService.createIntent(this@AlarmReceiverActivity))
+//                stopService(LocationService.createIntent(this@AlarmReceiverActivity))
                 finish()
             }
         })
+    }
+
+    override fun onStart() {
         val alarmUri = getAlarmUri()
         alarmUri?.let {playSound(this, alarmUri)}
+        stopService(LocationService.createIntent(this@AlarmReceiverActivity))
+        super.onStart()
     }
 
     private fun playSound(context: Context, alert: Uri) {
@@ -76,7 +81,6 @@ class AlarmReceiverActivity: Activity() {
 
     override fun onStop() {
         super.onStop()
-        stopService(LocationService.createIntent(this@AlarmReceiverActivity))
         mMediaPlayer!!.stop()
     }
 }
