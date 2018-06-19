@@ -2,21 +2,25 @@ package com.example.rmarkov.mapapp.map
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Color
+import android.preference.PreferenceManager
 import com.example.rmarkov.mapapp.location.LocationStatusHolder
 import com.example.rmarkov.mapapp.R
 import com.example.rmarkov.mapapp.BasePresenter
+import com.example.rmarkov.mapapp.Constants
 import com.example.rmarkov.mapapp.utils.distanceTo
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
+import com.pavelsikun.seekbarpreference.SeekBarPreferenceCompat
 import javax.inject.Inject
 
 
 class MapViewPresenter
 @Inject constructor(private val context: Context,
                     private val locationStatusHolder: LocationStatusHolder)
-    : BasePresenter<IMapView>(), GoogleMap.OnMapClickListener, GoogleMap.OnMarkerDragListener {
+    : BasePresenter<IMapView>(), GoogleMap.OnMapClickListener, GoogleMap.OnMarkerDragListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     var isFirstLocation: Boolean = true
 
@@ -26,17 +30,27 @@ class MapViewPresenter
 
     var circle: Circle? = null
 
-    var radius = 10.0
+    var radius = Constants.DEFAULT_RADIUS
 
     override fun attachView(view: IMapView) {
+        super.attachView(view)
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .registerOnSharedPreferenceChangeListener(this)
+        radius = PreferenceManager.getDefaultSharedPreferences(context)
+                .getInt(context.getString(R.string.preference_key_for_radius), 1000)
+                .toDouble()
+
+        updateCircle()
+
         val deviceDistanceDisposable = locationStatusHolder
                 .deviceLocationObservable
                 .subscribe(this::handleDeviceLocation)
         compositeDisposable.add(deviceDistanceDisposable)
-        super.attachView(view)
     }
 
     public override fun detachView() {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .unregisterOnSharedPreferenceChangeListener(this)
         super.detachView()
     }
 
@@ -100,7 +114,7 @@ class MapViewPresenter
                 .draggable(true)
     }
 
-    private fun createUsualCircleOptions(latlng: LatLng): CircleOptions {
+    private fun createUsualCircleOptions(latlng: LatLng?): CircleOptions {
         return CircleOptions()
                 .center(latlng)
                 .radius(radius)
@@ -138,6 +152,21 @@ class MapViewPresenter
 
     private fun handleNewDistance(distance: Float) {
             view?.showDistance(distance)
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        if (key == context.getString(R.string.preference_key_for_radius)) {
+            sharedPreferences?.let {
+                radius = sharedPreferences.getInt(context.getString(R.string.preference_key_for_radius), 1000).toDouble()}
+            updateCircle()
+        }
+    }
+
+    private fun updateCircle() {
+        circle?.remove()
+        val previousDestination = marker?.position
+        previousDestination?.let{
+            circle = view?.addCircle(createUsualCircleOptions(previousDestination))}
     }
 
 }

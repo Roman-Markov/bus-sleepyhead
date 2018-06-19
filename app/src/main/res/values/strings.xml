@@ -4,4 +4,5 @@
     <string name="preference_key_for_radius">preference_key_for_radius</string>
     <string name="key_for_last_destination">key_for_last_destination</string>
     <string name="settings">settings</string>
+    <string name="radius_too_big">Radius is too big for current destination</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.example.rmarkov.mapapp.dagger.components
 
+import com.example.rmarkov.mapapp.SettingsActivity
 import com.example.rmarkov.mapapp.location.LocationService
 import com.example.rmarkov.mapapp.map.MainActivity
 import com.example.rmarkov.mapapp.dagger.modules.ApplicationModule
@@ -12,4 +13,5 @@ interface ApplicationComponent {
 
     fun inject(activity: MainActivity)
     fun inject(locationService: LocationService)
+    fun inject(settingsFragment: SettingsActivity.SettingsFragment)
 }

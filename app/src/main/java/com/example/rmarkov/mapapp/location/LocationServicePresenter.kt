@@ -2,9 +2,13 @@ package com.example.rmarkov.mapapp.location
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.location.Location
+import android.preference.PreferenceManager
 import android.util.Log
 import com.example.rmarkov.mapapp.BasePresenter
+import com.example.rmarkov.mapapp.Constants
+import com.example.rmarkov.mapapp.R
 import com.example.rmarkov.mapapp.utils.checkLocationPermission
 import com.example.rmarkov.mapapp.utils.distanceTo
 import com.example.rmarkov.mapapp.utils.toLatLng
@@ -15,12 +19,13 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
+import com.pavelsikun.seekbarpreference.SeekBarPreferenceCompat
 import javax.inject.Inject
 
 class LocationServicePresenter
 @Inject constructor(val context: Context,
                     private val fusedLocationProviderClient: FusedLocationProviderClient,
-                    private val locationHolder: LocationStatusHolder): BasePresenter<ILocationService>(){
+                    private val locationHolder: LocationStatusHolder): BasePresenter<ILocationService>(), SharedPreferences.OnSharedPreferenceChangeListener {
 
     private val TAG = "LocationServPresenter"
 
@@ -30,7 +35,7 @@ class LocationServicePresenter
 
     private var locationRequest: LocationRequest? = null
 
-    private var radius = 10.0
+    private var radius = Constants.DEFAULT_RADIUS
 
     private var isLocationUpdatesRequested = false
 
@@ -62,8 +67,19 @@ class LocationServicePresenter
         }
     }
 
+    override fun attachView(view: ILocationService) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .registerOnSharedPreferenceChangeListener(this)
+        radius = PreferenceManager.getDefaultSharedPreferences(context)
+                .getInt(context.getString(R.string.preference_key_for_radius), 1000)
+                .toDouble()
+        super.attachView(view)
+    }
+
     override fun detachView() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .unregisterOnSharedPreferenceChangeListener(this)
         isLocationUpdatesRequested = false
         super.detachView()
         if (lastKnownDestination == null) {
@@ -113,6 +129,14 @@ class LocationServicePresenter
         if (distance < radius) {
             Log.d(TAG, "Start alert - distance: $distance, radius: $radius")
             view?.startAlert()
+        }
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        if (key == context.getString(R.string.preference_key_for_radius)) {
+            radius = PreferenceManager.getDefaultSharedPreferences(context)
+                    .getInt(context.getString(R.string.preference_key_for_radius), 1000)
+                    .toDouble()
         }
     }
 }

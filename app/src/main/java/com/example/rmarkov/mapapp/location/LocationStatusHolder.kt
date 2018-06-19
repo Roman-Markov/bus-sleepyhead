@@ -1,5 +1,6 @@
 package com.example.rmarkov.mapapp.location
 
+import com.example.rmarkov.mapapp.utils.distanceTo
 import com.google.android.gms.maps.model.LatLng
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
@@ -28,5 +29,10 @@ class LocationStatusHolder {
     fun onDestinationPositionChanged(latlng: LatLng) {
         destinationLocation = latlng
         destinationLocationSubject.onNext(latlng)
+    }
+
+    public fun validateNewRadius(newRadius: Double): Boolean {
+        val distance = deviceLocation.distanceTo(destinationLocation)
+        return newRadius < distance
     }
 }
