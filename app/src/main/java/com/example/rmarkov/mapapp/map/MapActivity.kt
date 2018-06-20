@@ -25,10 +25,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
 
 
-class MainActivity : AppCompatActivity(), IMapView, OnMapReadyCallback {
+class MapActivity : AppCompatActivity(), IMapView, OnMapReadyCallback {
 
     companion object {
-        val TAG = "MainActivity"
+        val TAG = "MapActivity"
         val REQUEST_CODE_FOR_LOCATION_PERMISSIONS = 1421
     }
 
@@ -71,6 +71,7 @@ class MainActivity : AppCompatActivity(), IMapView, OnMapReadyCallback {
     }
 
     override fun onMapReady(map: GoogleMap?) {
+        Log.d(TAG, "map is ready")
         if (map != null) {
             googleMap = map
             googleMap.setOnMarkerDragListener(presenter)

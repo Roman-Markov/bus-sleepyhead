@@ -19,17 +19,20 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
-import com.pavelsikun.seekbarpreference.SeekBarPreferenceCompat
+import io.reactivex.Single
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class LocationServicePresenter
 @Inject constructor(val context: Context,
                     private val fusedLocationProviderClient: FusedLocationProviderClient,
-                    private val locationHolder: LocationStatusHolder): BasePresenter<ILocationService>(), SharedPreferences.OnSharedPreferenceChangeListener {
+                    private val locationHolder: LocationStatusHolder)
+    : BasePresenter<ILocationService>(), SharedPreferences.OnSharedPreferenceChangeListener {
 
     private val TAG = "LocationServPresenter"
 
-    private lateinit var lastKnownLocation: Location
+    private var lastKnownLocation: Location? = null
 
     private var lastKnownDestination: LatLng? = null
 
@@ -39,13 +42,15 @@ class LocationServicePresenter
 
     private var isLocationUpdatesRequested = false
 
+    private var lastLocationSingle: Single<LatLng>? = null
+
     var locationCallback: LocationCallback = object: LocationCallback() {
         override fun onLocationResult(locactioResult: LocationResult?) {
             if (locactioResult == null) return
-            lastKnownLocation = locactioResult.lastLocation
+            lastKnownLocation = locactioResult.lastLocation?:lastKnownLocation
             // TODO think about delegate
-            locationHolder.onDevicePositionChanged(lastKnownLocation.toLatLng())
-            handleDeviceLocation(lastKnownLocation.toLatLng())
+            locationHolder.onDevicePositionChanged(lastKnownLocation!!.toLatLng())
+            handleDeviceLocation(lastKnownLocation!!.toLatLng())
         }
     }
 
@@ -71,21 +76,23 @@ class LocationServicePresenter
         PreferenceManager.getDefaultSharedPreferences(context)
                 .registerOnSharedPreferenceChangeListener(this)
         radius = PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt(context.getString(R.string.preference_key_for_radius), 1000)
+                .getInt(context.getString(R.string.preference_key_for_radius), Constants.DEFAULT_RADIUS.toInt())
                 .toDouble()
         super.attachView(view)
     }
 
     override fun detachView() {
+        Log.d(TAG, "detach view")
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         PreferenceManager.getDefaultSharedPreferences(context)
                 .unregisterOnSharedPreferenceChangeListener(this)
         isLocationUpdatesRequested = false
         super.detachView()
-        if (lastKnownDestination == null) {
-            // it is no need to keep service in background when destination is unknown
-            view?.stop()
-        }
+//        if (lastKnownDestination == null) {
+//            // it is no need to keep service in background when destination is unknown
+//            view?.stop()
+//        }
+        super.detachView()
     }
 
     private fun getDeviceLocation() {
@@ -98,7 +105,7 @@ class LocationServicePresenter
                         if (task.isSuccessful) {
                             Log.d(TAG, "retrieving current location is success: ${task.result}")
                             lastKnownLocation = task.result
-                            locationHolder.onDevicePositionChanged(lastKnownLocation.toLatLng())
+                            locationHolder.onDevicePositionChanged(lastKnownLocation!!.toLatLng())
                         } else {
                             Log.e(TAG, "Current location is null, exception: ", task.exception)
                         }
@@ -138,5 +145,34 @@ class LocationServicePresenter
                     .getInt(context.getString(R.string.preference_key_for_radius), 1000)
                     .toDouble()
         }
+    }
+
+    fun getLastKnownLocation()/*: Single<LatLng>*/ {
+//        Log.d(TAG, "retrieving current location...")
+//        if (lastLocationSingle != null) {
+//            return lastLocationSingle?:Single.just(lastKnownLocation!!.toLatLng())
+//        }
+//        try {
+//            if (context.checkLocationPermission()) {
+//                val locationResult = fusedLocationProviderClient.lastLocation
+//                locationResult.addOnCompleteListener(object: OnCompleteListener<Location> {
+//                    override fun onComplete(task: Task<Location>) {
+//                        if (task.isSuccessful) {
+//                            Log.d(TAG, "retrieving current location is success: ${task.result}")
+//                            lastKnownLocation = task.result
+//                            locationHolder.onDevicePositionChanged(lastKnownLocation!!.toLatLng())
+//                            if (lastLocationSingle == null) {
+//                                lastLocationSingle = Single.just(task.result.toLatLng()).cache()
+//                            }
+//                        } else {
+//                            Log.e(TAG, "Current location is null, exception: ", task.exception)
+//                        }
+//                    }
+//                })
+//            }
+//        } catch (e: SecurityException) {
+//            Log.e(TAG, "Exception: $e")
+//        }
+//        return lastLocationSingle
     }
 }

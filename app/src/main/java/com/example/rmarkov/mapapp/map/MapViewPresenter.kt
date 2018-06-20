@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.preference.PreferenceManager
+import android.util.Log
 import com.example.rmarkov.mapapp.location.LocationStatusHolder
 import com.example.rmarkov.mapapp.R
 import com.example.rmarkov.mapapp.BasePresenter
@@ -13,7 +14,6 @@ import com.example.rmarkov.mapapp.utils.distanceTo
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
-import com.pavelsikun.seekbarpreference.SeekBarPreferenceCompat
 import javax.inject.Inject
 
 
@@ -21,6 +21,10 @@ class MapViewPresenter
 @Inject constructor(private val context: Context,
                     private val locationStatusHolder: LocationStatusHolder)
     : BasePresenter<IMapView>(), GoogleMap.OnMapClickListener, GoogleMap.OnMarkerDragListener, SharedPreferences.OnSharedPreferenceChangeListener {
+
+    companion object {
+        const val TAG = "MapViewPresenter"
+    }
 
     var isFirstLocation: Boolean = true
 
@@ -81,12 +85,14 @@ class MapViewPresenter
     }
 
     override fun onMarkerDragEnd(m: Marker?) {
+        Log.d(TAG, "marker drag end: " + m?.position)
         if (m != null && m.id == marker?.id) {
             handleNewDraggableMarker(m)
         }
     }
 
     override fun onMapClick(latlng: LatLng?) {
+        Log.d(TAG, "map clicked: $latlng")
         latlng?.let {
             if (latlng.distanceTo(locationStatusHolder.deviceLocation) > radius) {
                 marker?.remove()
@@ -100,6 +106,7 @@ class MapViewPresenter
     }
 
     private fun createNewDestination(latlng: LatLng) {
+        Log.d(TAG, "creating new destination: $latlng")
         locationStatusHolder.onDestinationPositionChanged(latlng)
         val map = view?: return
         map.startLocationService(latlng)
@@ -158,6 +165,7 @@ class MapViewPresenter
         if (key == context.getString(R.string.preference_key_for_radius)) {
             sharedPreferences?.let {
                 radius = sharedPreferences.getInt(context.getString(R.string.preference_key_for_radius), 1000).toDouble()}
+            Log.d(TAG, "radius has changed from settings: $radius")
             updateCircle()
         }
     }

@@ -6,12 +6,15 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Binder
 import android.os.IBinder
 import com.example.rmarkov.mapapp.AlarmReceiverActivity
 import com.example.rmarkov.mapapp.R
 import com.example.rmarkov.mapapp.utils.getAppComponent
 import com.google.android.gms.maps.model.LatLng
+import io.reactivex.Single
 import java.util.*
+import java.util.concurrent.Future
 import javax.inject.Inject
 
 class LocationService: Service(), ILocationService {
@@ -23,7 +26,9 @@ class LocationService: Service(), ILocationService {
     }
 
     @Inject
-    lateinit var presenter: LocationServicePresenter
+    public lateinit var presenter: LocationServicePresenter
+
+    lateinit var locationProvider: LastKnownLocationProvider
 
     override fun onCreate() {
         getAppComponent().inject(this)
@@ -36,11 +41,9 @@ class LocationService: Service(), ILocationService {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        var lastDestination = intent?.getParcelableArrayListExtra<LatLng>(
+        val lastDestination = intent?.getParcelableArrayListExtra<LatLng>(
                 this.getString(R.string.key_for_last_destination))?.first()
-        presenter.onServiceStarted(
-                if (lastDestination == null) null
-                else lastDestination as LatLng)
+        presenter.onServiceStarted(lastDestination)
         return START_REDELIVER_INTENT
     }
 
@@ -64,5 +67,11 @@ class LocationService: Service(), ILocationService {
 
     override fun stop() {
         stopSelf()
+    }
+
+    inner class LastKnownLocationProvider: Binder() {
+        fun getLastKnownLocation()/*: Single<LatLng> */{
+            return presenter.getLastKnownLocation()
+        }
     }
 }
